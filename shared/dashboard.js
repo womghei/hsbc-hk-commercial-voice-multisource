@@ -113,6 +113,17 @@
     });
   }
 
+  
+  function paintHubAnalysisMini() {
+    var ha = (DATA && DATA.hub_analysis) || {};
+    if (!ha || !ha.symptom_zh) return;
+    var en = isEn();
+    var box = byId('personaClinical');
+    if (box) box.style.display = 'grid';
+    var s = byId('personaSymptom'); if (s) s.textContent = en ? (ha.symptom_en || '') : (ha.symptom_zh || '');
+    var tr = byId('personaTreatment'); if (tr) tr.textContent = en ? (ha.treatment_en || '') : (ha.treatment_zh || '');
+  }
+
   function renderHeader() {
     var meta = DATA.meta || {};
     var persona = livePersona();
@@ -123,6 +134,7 @@
     $$('.persona-nav a').forEach(function (a) {
       a.classList.toggle('active', a.getAttribute('data-id') === personaId);
     });
+    paintHubAnalysisMini();
   }
 
   function kpiDefs() {
@@ -155,6 +167,7 @@
       if (v == null && def.key === 'net_sentiment') v = 0;
       if (v == null) return;
       if ((def.key === 'placeholder_count' || def.key === 'hot_theme_count' || def.key === 'platform_count') && hi.indexOf(def.key) < 0 && def.key !== 'web_informed_count' && def.key !== 'platform_count') {
+        if (def.key === 'placeholder_count' && !(kpis.placeholder_count > 0)) return;
         if (def.key === 'placeholder_count' || def.key === 'hot_theme_count') return;
       }
       cards.push(
@@ -259,10 +272,13 @@
       cy += ((h * 3) % 7) - 3;
       cx = Math.max(6, Math.min(94, cx));
       cy = Math.max(8, Math.min(92, cy));
+      var wtxt = L(w.text_en || w.text || '');
+      if (isEn() && /[\u4e00-\u9fff]/.test(wtxt)) return; /* skip untranslated CJK in EN */
+      if (!wtxt) return;
       parts.push(
         '<span style="left:' + cx.toFixed(1) + '%;top:' + cy.toFixed(1) + '%;font-size:' + size +
         'px;color:' + color + ';opacity:' + (0.55 + ratio * 0.45).toFixed(2) +
-        '" title="' + esc(w.text) + ' · ' + t('weight') + ' ' + esc(w.weight) + '">' + esc(w.text) + '</span>'
+        '" title="' + esc(wtxt) + ' · ' + t('weight') + ' ' + esc(w.weight) + '">' + esc(wtxt) + '</span>'
       );
     });
     setHTML(box, parts.join(''));
@@ -291,9 +307,9 @@
       '<th>' + t('comp.org') + '</th><th>' + t('comp.sov') + '</th><th>' + t('comp.lean') + '</th><th>' + t('comp.note') + '</th></tr></thead><tbody>';
     rows.forEach(function (c) {
       var cls = c.name === '汇丰' ? 'hsbc' : '';
-      var badge = c.placeholder ? ' <span class="pill demo">' + t('badge.demo') + '</span>' : '';
+      var badge = (c.placeholder && c.placeholder !== false && ((DATA.kpis_clean||{}).placeholder_count||0) > 0) ? ' <span class="pill demo">' + t('badge.demo') + '</span>' : '';
       var sov = Number(c.sov) || 0;
-      html += '<tr class="' + cls + '"><td>' + esc(c.name) + badge + '</td>' +
+      html += '<tr class="' + cls + '"><td>' + esc(L(c.name)) + badge + '</td>' +
         '<td><div class="bar-track" style="display:inline-block;width:80px;vertical-align:middle;margin-right:6px">' +
         '<div class="bar-fill' + (c.name === '汇丰' ? ' neg' : '') + '" style="width:' + sov + '%"></div></div>' +
         sov + '%</td>' +
@@ -537,6 +553,12 @@
     if (fPers) {
       fPers.checked = filterState.hidePersonalNoise;
       if (!filtersBound) fPers.addEventListener('change', function () { filterState.hidePersonalNoise = !!fPers.checked; renderFeed(); });
+      var hasPers = (DATA.posts || []).some(function (p) { return p.is_personal_noise; });
+      if (!hasPers) {
+        var persRow = fPers.closest ? (fPers.closest('label') || fPers.closest('.filter-item') || fPers.parentElement) : fPers.parentElement;
+        if (persRow) persRow.style.display = 'none';
+        filterState.hidePersonalNoise = false;
+      }
     }
     if (fSent) {
       setHTML(fSent, '<option value="">' + t('filter.all_sent') + '</option><option value="正面">' + t('sent.pos') + '</option><option value="负面">' + t('sent.neg') + '</option><option value="中性">' + t('sent.neu') + '</option>');
@@ -620,28 +642,36 @@
     var tbody = byId('postBody');
     if (!tbody) return;
     if (!posts.length) {
-      setHTML(tbody, '<tr><td colspan="7" class="card-muted">' + t('empty.posts') + '</td></tr>');
+      setHTML(tbody, '<tr><td colspan="8" class="card-muted">' + t('empty.posts') + '</td></tr>');
       return;
     }
     setHTML(tbody, posts.slice(0, 120).map(function (p) {
-      var demo = (p.is_placeholder || p.demo_badge) ? '<span class="pill demo">' + t('badge.demo_ms') + '</span> ' : '';
       var src;
-      if (p.source_status === 'xhs_sample_api' || p.source_status === 'xhs_public') src = '<span class="pill src">' + (isEn() ? 'XHS sample' : '小红书样本') + '</span>';
-      else if (p.source_status === 'web_informed') src = '<span class="pill src web">Web Informed</span>';
-      else src = '<span class="pill demo">' + t('badge.demo_ms') + '</span>';
+      if (p.source_status === 'web_informed') src = '<span class="pill src web">Web Informed</span>';
+      else src = '<span class="pill src">' + (isEn() ? 'Xiaohongshu' : '小红书') + '</span>';
       var ch = '<span class="pill channel">' + esc(channelLabel(p.source_channel) || p.source_channel || '—') + '</span>';
       var cred = '<span class="pill cred-' + esc(p.credibility || 'medium') + '">' + esc(({ high: t('cred.high'), medium: t('cred.medium'), low: t('cred.low') })[p.credibility] || p.credibility || '') + '</span>';
-      var comps = (p.competitors && p.competitors.length) ? p.competitors.join('、') : '—';
-      var link = '';
-      if (p.url && !/xiaohongshu\.com\/(explore|discovery)/i.test(p.url)) {
-        link = ' <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + t('link') + '</a>';
-      }
+      var comps = (p.competitors && p.competitors.length) ? p.competitors.map(function (c) { return L(c); }).join(isEn() ? ', ' : '、') : '—';
+      var noteId = p.note_id || '';
+      var postUrl = p.url || (noteId ? ('https://www.xiaohongshu.com/explore/' + noteId) : '');
+      // Web Informed keeps its own URL; XHS uses explore link
+      if (p.source_status === 'web_informed' && p.url) postUrl = p.url;
+      var thumb = p.cover_url
+        ? ('<img class="thumb" src="' + esc(p.cover_url) + '" alt="" loading="lazy" referrerpolicy="no-referrer"/>')
+        : '<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:#bbb">—</div>';
+      var openL = postUrl
+        ? ('<a class="open-post" href="' + esc(postUrl) + '" target="_blank" rel="noopener noreferrer">' + t('feed.open_post') + '</a>')
+        : '';
+      var title = (isEn() ? (p.title_en || p.title) : (p.title || p.title_en)) || t('no_title');
+      var summary = (isEn() ? (p.summary_en || p.summary) : (p.summary || p.summary_en)) || '';
       return '<tr>' +
-        '<td><div class="title">' + demo + esc((isEn() ? (p.title_en || p.title) : (p.title || p.title_en)) || t('no_title')) + '</div>' +
-        '<div class="summary">' + esc((isEn() ? (p.summary_en || p.summary) : (p.summary || p.summary_en)) || '') + link + '</div>' +
-        (isEn() ? '<div class="card-muted" style="margin-top:4px;font-style:italic">' + t('feed.orig_note') + '</div>' : '') +
-        '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">' + platformPill(p) + ch + cred + '</div>' +
-        '<div class="card-muted" style="margin-top:4px">' + esc(p.id || '') + '</div></td>' +
+        '<td class="col-cover">' + thumb + '</td>' +
+        '<td class="col-title"><div class="title">' + esc(title) + '</div>' +
+        '<div class="summary">' + esc(summary) + '</div>' +
+        openL +
+        (noteId ? '<div class="card-muted" style="margin-top:4px">' + esc(noteId) + '</div>' : '') +
+        '</td>' +
+        '<td><span class="pill plat">' + esc(L(p.platform) || p.platform || '—') + '</span> ' + ch + ' ' + cred + '</td>' +
         '<td><span class="pill ' + esc(p.sentiment) + '">' + esc(Sent(p.sentiment)) + '</span></td>' +
         '<td>' + esc(L(p.category) || '—') + '</td>' +
         '<td>' + esc(L(p.author_type) || '—') + '<div class="card-muted">' + esc(L(p.segment) || '') + '</div></td>' +

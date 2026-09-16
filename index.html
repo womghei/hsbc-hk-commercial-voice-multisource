@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>汇丰香港商业银行 · 多源社交聆听看板套件</title>
+<title data-i18n="hub.title_ms">汇丰香港商业银行 · 多源社交聆听看板套件</title>
 <link rel="stylesheet" href="shared/theme.css"/>
 </head>
 <body>
@@ -19,7 +19,7 @@
     </div>
     <h1 data-i18n="hub.h1_ms">汇丰香港商业银行 · 多源客户声音监听</h1>
     <p data-i18n="hub.p_ms">在 v2 小红书单源基础上扩展：官网/新闻稿 Web Informed（真实 URL）、新闻媒体、知乎摘要、以及微博/论坛「示意·模拟」。主题对齐 business.hsbc.com.hk 红白灰商务风格（#DB0011）。</p>
-    <p style="margin-top:12px;font-size:0.8rem" data-i18n="hub.meta_ms">数据：小红书样本 70 · Web Informed 8 · 示意·模拟补齐 · 7 平台 · 更新 2026-09-16 19:50 HKT</p>
+    <p style="margin-top:12px;font-size:0.8rem" data-i18n="hub.meta_ms">数据：小红书公开内容样本 + Web Informed · 已剔除个人户与占位 · 更新见页脚</p>
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
       <a class="btn" href="head.html" data-i18n="hub.open">打开管理层总览</a>
       <a class="btn btn-ghost" href="dashboard-static-overview.html" data-i18n="hub.static">静态快照（无 JS）</a>
@@ -66,15 +66,43 @@
   </a>
 </section>
 
+
+<section class="wrap" style="padding-top:0" id="hubAnalysis">
+  <div class="card" style="margin-bottom:16px">
+    <h3 data-i18n="hub.overview_h">总体综述</h3>
+    <p id="hubOverview" class="hub-overview" style="font-size:0.9rem;line-height:1.55;color:#333;margin:0"></p>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <h3 data-i18n="hub.clinical_h">管理层诊疗模型 · 症状 / 诊断 / 处置 / 随访</h3>
+    <div class="clinical-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:10px">
+      <div class="clinical-card" style="border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa">
+        <div class="flabel" style="font-size:0.7rem;font-weight:700;color:#DB0011;letter-spacing:0.04em" data-i18n="hub.symptom_h">症状</div>
+        <p id="hubSymptom" style="font-size:0.82rem;line-height:1.45;margin:8px 0 0;color:#222"></p>
+      </div>
+      <div class="clinical-card" style="border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa">
+        <div class="flabel" style="font-size:0.7rem;font-weight:700;color:#DB0011;letter-spacing:0.04em" data-i18n="hub.diagnosis_h">诊断</div>
+        <p id="hubDiagnosis" style="font-size:0.82rem;line-height:1.45;margin:8px 0 0;color:#222"></p>
+      </div>
+      <div class="clinical-card" style="border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa">
+        <div class="flabel" style="font-size:0.7rem;font-weight:700;color:#0a7a3e;letter-spacing:0.04em" data-i18n="hub.treatment_h">处置</div>
+        <p id="hubTreatment" style="font-size:0.82rem;line-height:1.45;margin:8px 0 0;color:#222"></p>
+      </div>
+      <div class="clinical-card" style="border:1px solid #eee;border-radius:8px;padding:12px;background:#fafafa">
+        <div class="flabel" style="font-size:0.7rem;font-weight:700;color:#333;letter-spacing:0.04em" data-i18n="hub.followup_h">随访</div>
+        <p id="hubFollowup" style="font-size:0.82rem;line-height:1.45;margin:8px 0 0;color:#222"></p>
+      </div>
+    </div>
+  </div>
+</section>
 <section class="wrap" style="padding-top:0">
   <div class="card">
     <h3 data-i18n="hub.about_ms_h">相对 v1 / v2（小红书单源）的增强</h3>
     <ul style="margin:0;padding-left:1.2em;font-size:0.85rem;color:#333">
-      <li><strong>多源数据模型</strong>：每帖含 platform / source_channel / credibility，保留中介与个人噪声标记。</li>
-      <li><strong>Web Informed</strong>：Sprint/BIA、Account Fitness、IADS、Aug 2026 资费、知乎竞品摘要等，允许真实官网/新闻 URL。</li>
-      <li><strong>示意·模拟</strong>：微博/知乎/论坛占位明确徽章，避免与公开样本混淆。</li>
-      <li><strong>第 1 页新图</strong>：平台分布、渠道环图、News/UGC/Official 份额、可信度、跨源主题热力。</li>
-      <li><strong>第 2 页</strong>：可按平台与渠道过滤；信息流展示平台胶囊。</li>
+      <li data-i18n="hub.about_ms1">多源数据模型：每帖含 platform / source_channel / credibility，保留中介噪声标记。</li>
+      <li data-i18n="hub.about_ms2">Web Informed：Sprint/BIA、Account Fitness、IADS、资费与知乎竞品摘要等，含真实官网/新闻 URL。</li>
+      <li data-i18n="hub.about_ms3">本版无微博/论坛示意占位；公开样本与 Web Informed 口径分离。</li>
+      <li data-i18n="hub.about_ms4">第 1 页：平台分布、渠道环图、News/UGC/Official 份额、可信度、跨源主题热力。</li>
+      <li data-i18n="hub.about_ms5">第 2 页：可按平台与渠道过滤；信息流展示平台胶囊与帖子外链。</li>
     </ul>
   </div>
 </section>
@@ -86,6 +114,7 @@
 (function(){
   var I=window.HSBC_I18N; if(!I) return;
   function paintHub(){
+    I.applyDom(document);
     var personas= (window.HSBC_SL_DATA&&HSBC_SL_DATA.personas)||{};
     document.querySelectorAll('.persona-card[href]').forEach(function(a){
       var href=a.getAttribute('href')||'';
@@ -94,6 +123,27 @@
       var h2=a.querySelector('h2'); if(h2&&p.title) h2.textContent=p.title;
       var tag=a.querySelector('.pc-tag'); if(tag&&p.tagline) tag.textContent=p.tagline;
     });
+
+    // Data-driven hub analysis (exec / overview / clinical)
+    var ha = (window.HSBC_SL_DATA && HSBC_SL_DATA.hub_analysis) || {};
+    var en = I.isEn();
+    function set(id, zhKey, enKey) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var v = en ? (ha[enKey] || ha[zhKey] || '') : (ha[zhKey] || '');
+      el.textContent = v || '';
+    }
+    // hub.p intro = exec summary
+    var intro = document.querySelector('[data-i18n="hub.p"],[data-i18n="hub.p_ms"]');
+    if (intro) {
+      var ex = en ? (ha.exec_summary_en || '') : (ha.exec_summary_zh || '');
+      if (ex) intro.textContent = ex;
+    }
+    set('hubOverview', 'overview_zh', 'overview_en');
+    set('hubSymptom', 'symptom_zh', 'symptom_en');
+    set('hubDiagnosis', 'diagnosis_zh', 'diagnosis_en');
+    set('hubTreatment', 'treatment_zh', 'treatment_en');
+    set('hubFollowup', 'followup_zh', 'followup_en');
   }
   I.onChange(paintHub); paintHub();
 })();
