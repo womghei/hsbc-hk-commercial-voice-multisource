@@ -55,3 +55,7 @@ node tests/logic_check.js
 ## 主题
 
 对齐 business.hsbc.com.hk：主色 `#DB0011`，白/浅灰背景，红仅用于 CTA、激活页签与关键 KPI。
+
+## Language
+
+Header toggle **中文 | EN** (persisted in `localStorage` key `hsbc-sl-lang`). Default is 中文; use `?lang=en` to start in English. UI chrome, persona insights, KPIs, filters, and sentiment pills are translated; original UGC post bodies stay in Chinese with an EN-mode note.

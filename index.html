@@ -7,21 +7,22 @@
 <link rel="stylesheet" href="shared/theme.css"/>
 </head>
 <body>
-<header class="hub-hero">
+<header class="hub-hero" style="position:relative">
+<div style="position:absolute;top:16px;right:24px;z-index:2" id="langToggleHost"></div>
   <div class="hub-hero-inner">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
       <span class="brand-mark" style="width:36px;height:36px"></span>
       <div>
         <div style="font-size:0.7rem;font-weight:700;color:#DB0011;letter-spacing:0.06em">HSBC COMMERCIAL BANKING · HONG KONG</div>
-        <div style="font-size:0.75rem;color:#666">多源社交聆听看板套件 · multisource-v1 <span class="ms-badge">MULTI-SOURCE</span></div>
+        <div style="font-size:0.75rem;color:#666"><span data-i18n="hub.sub_ms">多源社交聆听看板套件 · multisource-v1</span> <span class="ms-badge">MULTI-SOURCE</span></div>
       </div>
     </div>
-    <h1>汇丰香港商业银行 · 多源客户声音监听</h1>
-    <p>在 v2 小红书单源基础上扩展：官网/新闻稿 Web Informed（真实 URL）、新闻媒体、知乎摘要、以及微博/论坛「示意·模拟」。主题对齐 business.hsbc.com.hk 红白灰商务风格（#DB0011）。</p>
-    <p style="margin-top:12px;font-size:0.8rem">数据：Just One 70 · Web Informed 8 · 示意·模拟补齐 · 7 平台 · 更新 2026-09-16 19:50 HKT</p>
+    <h1 data-i18n="hub.h1_ms">汇丰香港商业银行 · 多源客户声音监听</h1>
+    <p data-i18n="hub.p_ms">在 v2 小红书单源基础上扩展：官网/新闻稿 Web Informed（真实 URL）、新闻媒体、知乎摘要、以及微博/论坛「示意·模拟」。主题对齐 business.hsbc.com.hk 红白灰商务风格（#DB0011）。</p>
+    <p style="margin-top:12px;font-size:0.8rem" data-i18n="hub.meta_ms">数据：Just One 70 · Web Informed 8 · 示意·模拟补齐 · 7 平台 · 更新 2026-09-16 19:50 HKT</p>
     <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="head.html">打开管理层总览</a>
-      <a class="btn btn-ghost" href="dashboard-static-overview.html">静态快照（无 JS）</a>
+      <a class="btn" href="head.html" data-i18n="hub.open">打开管理层总览</a>
+      <a class="btn btn-ghost" href="dashboard-static-overview.html" data-i18n="hub.static">静态快照（无 JS）</a>
     </div>
   </div>
 </header>
@@ -31,43 +32,43 @@
     <div class="pc-aud">COUNTRY HEAD</div>
     <h2>香港管理层总览</h2>
     <div class="pc-tag">声誉风险 · 净情感 · 多源结构 · 行动建议</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
   <a class="persona-card" href="business-banking.html">
     <div class="pc-aud">BUSINESS BANKING</div>
     <h2>Business Banking 负责人</h2>
     <div class="pc-tag">开户漏斗痛点 · 客户经理 SLA · 产品套餐</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
   <a class="persona-card" href="sme-mid.html">
     <div class="pc-aud">SME / MID-MARKET</div>
     <h2>中型企业</h2>
     <div class="pc-tag">费用门槛 · 开户时效 · Sprint / Account Fitness</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
   <a class="persona-card" href="large-corp.html">
     <div class="pc-aud">LARGE CORPORATE</div>
     <h2>大型企业</h2>
     <div class="pc-tag">贸融/外汇 · 企业网银 · IADS · 服务连续性</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
   <a class="persona-card" href="cmo.html">
     <div class="pc-aud">CMO / BRAND</div>
     <h2>CMO / 品牌与市场</h2>
     <div class="pc-tag">多源声量 · 渠道结构 · 中介噪声 · 竞品 SOV</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
   <a class="persona-card" href="cto.html">
     <div class="pc-aud">CTO / DIGITAL</div>
     <h2>CTO / 数字与渠道</h2>
     <div class="pc-tag">App/网银 · IADS · 数字开户 · 故障信号</div>
-    <div class="pc-go">进入看板 →</div>
+    <div class="pc-go"><span data-i18n="hub.go">进入看板 →</span></div>
   </a>
 </section>
 
 <section class="wrap" style="padding-top:0">
   <div class="card">
-    <h3>相对 v1 / v2（小红书单源）的增强</h3>
+    <h3 data-i18n="hub.about_ms_h">相对 v1 / v2（小红书单源）的增强</h3>
     <ul style="margin:0;padding-left:1.2em;font-size:0.85rem;color:#333">
       <li><strong>多源数据模型</strong>：每帖含 platform / source_channel / credibility，保留中介与个人噪声标记。</li>
       <li><strong>Web Informed</strong>：Sprint/BIA、Account Fitness、IADS、Aug 2026 资费、知乎竞品摘要等，允许真实官网/新闻 URL。</li>
@@ -78,8 +79,24 @@
   </div>
 </section>
 
-<footer class="footer">
-  汇丰银行香港 · 商业银行 · 主题参考 business.hsbc.com.hk · 多源演示用途 · 请人工核对中介噪声
-</footer>
+<footer class="footer" data-i18n="hub.footer_ms">汇丰银行香港 · 商业银行 · 主题参考 business.hsbc.com.hk · 多源演示用途 · 请人工核对中介噪声</footer>
+<script src="shared/data.js"></script>
+<script src="shared/i18n.js"></script>
+<script>
+(function(){
+  var I=window.HSBC_I18N; if(!I) return;
+  function paintHub(){
+    var personas= (window.HSBC_SL_DATA&&HSBC_SL_DATA.personas)||{};
+    document.querySelectorAll('.persona-card[href]').forEach(function(a){
+      var href=a.getAttribute('href')||'';
+      var id=href.replace('.html','');
+      var p=I.persona(id, personas[id]||{});
+      var h2=a.querySelector('h2'); if(h2&&p.title) h2.textContent=p.title;
+      var tag=a.querySelector('.pc-tag'); if(tag&&p.tagline) tag.textContent=p.tagline;
+    });
+  }
+  I.onChange(paintHub); paintHub();
+})();
+</script>
 </body>
 </html>

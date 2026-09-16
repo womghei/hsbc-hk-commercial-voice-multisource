@@ -12,8 +12,26 @@
   var persona = (DATA.personas && (DATA.personas[personaId] || DATA.personas.head)) || {};
   var chartInstances = [];
   var ChartOK = typeof window.Chart !== 'undefined';
+  var I18N = window.HSBC_I18N;
+  var filtersBound = false;
+  function t(key) { return I18N ? I18N.t(key) : key; }
+  function L(zh) { return I18N ? I18N.label(zh) : zh; }
+  function Sent(zh) { return I18N ? I18N.sentiment(zh) : zh; }
+  function isEn() { return !!(I18N && I18N.isEn()); }
+  function livePersona() {
+    var base = (DATA.personas && (DATA.personas[personaId] || DATA.personas.head)) || {};
+    return I18N ? I18N.persona(personaId, base) : base;
+  }
+  function destroyCharts() {
+    chartInstances.forEach(function (c) {
+      try { if (c && c.destroy) c.destroy(); } catch (e) {}
+    });
+    chartInstances = [];
+  }
 
-  var CHANNEL_LABEL = { ugc: 'UGC', news: '新闻', official: '官方', forum: '论坛', web: '网页' };
+  function channelLabel(ch) {
+    return ({ ugc: t('ch.ugc'), news: t('ch.news'), official: t('ch.official'), forum: t('ch.forum'), web: t('ch.web') })[ch] || ch;
+  }
   var PLATFORM_CLASS = {
     '小红书': 'plat-xhs', '微博': 'plat-weibo', '知乎': 'plat-zhihu',
     '新闻媒体': 'plat-news', '官网/新闻稿': 'plat-official',
@@ -97,37 +115,42 @@
 
   function renderHeader() {
     var meta = DATA.meta || {};
+    var persona = livePersona();
     setText(byId('personaTitle'), persona.title || '');
     setText(byId('personaAudience'), persona.audience || '');
     var upd = byId('updatedAt');
-    if (upd) setText(upd, '更新 ' + (meta.updated_at_display || ''));
+    if (upd) setText(upd, t('updated') + ' ' + (meta.updated_at_display || ''));
     $$('.persona-nav a').forEach(function (a) {
       a.classList.toggle('active', a.getAttribute('data-id') === personaId);
     });
   }
 
-  var KPI_DEFS = [
-    { key: 'total_posts', label: '可见帖数', hint: '噪声过滤后', fmt: function (v) { return v; } },
-    { key: 'positive_pct', label: '正面占比', hint: '情感正向', cls: 'pos', fmt: function (v) { return v + '%'; } },
-    { key: 'negative_pct', label: '负面占比', hint: '情感负向', cls: 'neg', fmt: function (v) { return v + '%'; } },
-    { key: 'neutral_pct', label: '中性占比', hint: '情感中性', cls: 'neu', fmt: function (v) { return v + '%'; } },
-    { key: 'net_sentiment', label: '净情感', hint: '正面−负面 pp', fmt: function (v) { return (v > 0 ? '+' : '') + v + 'pp'; } },
-    { key: 'commercial_related_pct', label: '商业相关', hint: '可见样本内', fmt: function (v) { return v + '%'; } },
-    { key: 'intermediary_count', label: '中介/企服', hint: '全量样本', fmt: function (v) { return v; } },
-    { key: 'justone_count', label: 'Just One 实拉', hint: '小红书 API', fmt: function (v) { return v; } },
-    { key: 'web_informed_count', label: 'Web Informed', hint: '官网/新闻等', fmt: function (v) { return v; } },
-    { key: 'placeholder_count', label: '示意·模拟', hint: '占位补齐', fmt: function (v) { return v; } },
-    { key: 'platform_count', label: '平台数', hint: '多源覆盖', fmt: function (v) { return v; } },
-    { key: 'hot_theme_count', label: '热点主题', hint: '主题条数目', fmt: function (v) { return v; } }
-  ];
+  function kpiDefs() {
+    return [
+      { key: 'total_posts', label: t('kpi.total_posts'), hint: t('kpi.total_posts_h'), fmt: function (v) { return v; } },
+      { key: 'positive_pct', label: t('kpi.positive_pct'), hint: t('kpi.positive_pct_h'), cls: 'pos', fmt: function (v) { return v + '%'; } },
+      { key: 'negative_pct', label: t('kpi.negative_pct'), hint: t('kpi.negative_pct_h'), cls: 'neg', fmt: function (v) { return v + '%'; } },
+      { key: 'neutral_pct', label: t('kpi.neutral_pct'), hint: t('kpi.neutral_pct_h'), cls: 'neu', fmt: function (v) { return v + '%'; } },
+      { key: 'net_sentiment', label: t('kpi.net_sentiment'), hint: t('kpi.net_sentiment_h'), fmt: function (v) { return (v > 0 ? '+' : '') + v + 'pp'; } },
+      { key: 'commercial_related_pct', label: t('kpi.commercial_related_pct'), hint: t('kpi.commercial_related_pct_h'), fmt: function (v) { return v + '%'; } },
+      { key: 'intermediary_count', label: t('kpi.intermediary_count'), hint: t('kpi.intermediary_count_h'), fmt: function (v) { return v; } },
+      { key: 'justone_count', label: t('kpi.justone_count'), hint: t('kpi.justone_count_h_ms'), fmt: function (v) { return v; } },
+      { key: 'web_informed_count', label: t('kpi.web_informed_count'), hint: t('kpi.web_informed_count_h'), fmt: function (v) { return v; } },
+      { key: 'placeholder_count', label: t('kpi.placeholder_count_ms'), hint: t('kpi.placeholder_count_h_ms'), fmt: function (v) { return v; } },
+      { key: 'platform_count', label: t('kpi.platform_count'), hint: t('kpi.platform_count_h'), fmt: function (v) { return v; } },
+      { key: 'hot_theme_count', label: t('kpi.hot_theme_count'), hint: t('kpi.hot_theme_count_h'), fmt: function (v) { return v; } }
+    ];
+  }
 
   function renderKPIs() {
     var box = byId('kpiStrip');
     if (!box) return;
     var kpis = DATA.kpis_clean || DATA.kpis || {};
-    var hi = persona.kpi_highlight || [];
+    var persona = livePersona();
+    var baseP = (DATA.personas && (DATA.personas[personaId] || DATA.personas.head)) || {};
+    var hi = baseP.kpi_highlight || [];
     var cards = [];
-    KPI_DEFS.forEach(function (def) {
+    kpiDefs().forEach(function (def) {
       var v = kpis[def.key];
       if (v == null && def.key === 'net_sentiment') v = 0;
       if (v == null) return;
@@ -159,9 +182,9 @@
     var leg = byId('sentimentLegend');
     if (leg) {
       setHTML(leg,
-        '<span class="l-pos">正面 ' + (s['正面'] || 0) + '</span>' +
-        '<span class="l-neg">负面 ' + (s['负面'] || 0) + '</span>' +
-        '<span class="l-neu">中性 ' + (s['中性'] || 0) + '</span>'
+        '<span class="l-pos">' + t('sent.pos') + ' ' + (s['正面'] || 0) + '</span>' +
+        '<span class="l-neg">' + t('sent.neg') + ' ' + (s['负面'] || 0) + '</span>' +
+        '<span class="l-neu">' + t('sent.neu') + ' ' + (s['中性'] || 0) + '</span>'
       );
     }
 
@@ -172,10 +195,10 @@
         chartInstances.push(new Chart(spark.getContext('2d'), {
           type: 'line',
           data: {
-            labels: trend.labels,
+            labels: (trend.labels || []).map(function (lb) { return L(lb); }),
             datasets: [
-              { label: '正面%', data: trend.positive, borderColor: '#0a7a3e', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2, borderWidth: 2 },
-              { label: '负面%', data: trend.negative, borderColor: '#DB0011', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2, borderWidth: 2 }
+              { label: t('sent.pos') + '%', data: trend.positive, borderColor: '#0a7a3e', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2, borderWidth: 2 },
+              { label: t('sent.neg') + '%', data: trend.negative, borderColor: '#DB0011', backgroundColor: 'transparent', tension: 0.3, pointRadius: 2, borderWidth: 2 }
             ]
           },
           options: {
@@ -199,7 +222,7 @@
   function sparkTextFallback(spark, trend) {
     var host = spark && spark.parentNode;
     if (host && 'innerHTML' in host) {
-      setHTML(host, '<p class="card-muted">周趋势（示意）：正面 ' + (trend.positive || []).join('/') + ' · 负面 ' + (trend.negative || []).join('/') + '</p>');
+      setHTML(host, '<p class="card-muted">' + t('trend.fallback') + ' ' + (trend.positive || []).join('/') + ' · ' + t('trend.neg') + ' ' + (trend.negative || []).join('/') + '</p>');
     }
   }
 
@@ -210,20 +233,20 @@
     return '<div class="css-donut-wrap" style="display:flex;align-items:center;justify-content:center;height:200px;gap:16px;font-size:0.85rem;">' +
       '<div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(#0a7a3e 0 ' + p + '%,#DB0011 ' + p + '% ' + (p + n) + '%,#bbb ' + (p + n) + '% 100%);position:relative;">' +
       '<div style="position:absolute;inset:28px;background:#fff;border-radius:50%;"></div></div>' +
-      '<div style="line-height:1.7"><div><strong>正</strong> ' + p + '%</div><div><strong>负</strong> ' + n + '%</div><div><strong>中</strong> ' + u + '%</div></div></div>';
+      '<div style="line-height:1.7"><div><strong>' + t('sent.pos_short') + '</strong> ' + p + '%</div><div><strong>' + t('sent.neg_short') + '</strong> ' + n + '%</div><div><strong>' + t('sent.neu_short') + '</strong> ' + u + '%</div></div></div>';
   }
 
   function renderWordCloud() {
     var box = byId('wordCloud');
     if (!box) return;
     var words = (DATA.word_cloud || []).slice(0, 36);
-    if (!words.length) { setText(box, '暂无词云'); return; }
+    if (!words.length) { setText(box, t('empty.cloud')); return; }
     var maxW = words[0].weight || 1;
     var minW = words[words.length - 1].weight || 1;
     var parts = [];
     words.forEach(function (w, i) {
-      var t = (w.weight - minW) / (maxW - minW || 1);
-      var size = 11 + Math.round(t * 22);
+      var ratio = (w.weight - minW) / (maxW - minW || 1);
+      var size = 11 + Math.round(ratio * 22);
       var colors = ['#1e1e1e', '#333', '#DB0011', '#666', '#444', '#b4000e'];
       var color = i < 3 ? '#DB0011' : colors[i % colors.length];
       var angle = i * 2.4;
@@ -238,8 +261,8 @@
       cy = Math.max(8, Math.min(92, cy));
       parts.push(
         '<span style="left:' + cx.toFixed(1) + '%;top:' + cy.toFixed(1) + '%;font-size:' + size +
-        'px;color:' + color + ';opacity:' + (0.55 + t * 0.45).toFixed(2) +
-        '" title="' + esc(w.text) + ' · 权重 ' + esc(w.weight) + '">' + esc(w.text) + '</span>'
+        'px;color:' + color + ';opacity:' + (0.55 + ratio * 0.45).toFixed(2) +
+        '" title="' + esc(w.text) + ' · ' + t('weight') + ' ' + esc(w.weight) + '">' + esc(w.text) + '</span>'
       );
     });
     setHTML(box, parts.join(''));
@@ -254,7 +277,7 @@
       var lean = leanClass(t.sentiment_lean);
       var pct = Math.round(((t.count || 0) / max) * 100);
       return '<div class="bar-row">' +
-        '<div class="name" title="' + esc(t.name) + '">' + esc(t.name) + '</div>' +
+        '<div class="name" title="' + esc(L(t.name)) + '">' + esc(L(t.name)) + '</div>' +
         '<div class="bar-track"><div class="bar-fill ' + esc(lean) + ' ' + esc(t.sentiment_lean || '') + '" style="width:' + pct + '%"></div></div>' +
         '<div class="cnt">' + (t.count || 0) + '</div></div>';
     }).join(''));
@@ -265,24 +288,24 @@
     if (!box) return;
     var rows = DATA.competitors || [];
     var html = '<table class="comp-table"><thead><tr>' +
-      '<th>机构</th><th>声量份额</th><th>情感倾向</th><th>说明</th></tr></thead><tbody>';
+      '<th>' + t('comp.org') + '</th><th>' + t('comp.sov') + '</th><th>' + t('comp.lean') + '</th><th>' + t('comp.note') + '</th></tr></thead><tbody>';
     rows.forEach(function (c) {
       var cls = c.name === '汇丰' ? 'hsbc' : '';
-      var badge = c.placeholder ? ' <span class="pill demo">示意数据</span>' : '';
+      var badge = c.placeholder ? ' <span class="pill demo">' + t('badge.demo') + '</span>' : '';
       var sov = Number(c.sov) || 0;
       html += '<tr class="' + cls + '"><td>' + esc(c.name) + badge + '</td>' +
         '<td><div class="bar-track" style="display:inline-block;width:80px;vertical-align:middle;margin-right:6px">' +
         '<div class="bar-fill' + (c.name === '汇丰' ? ' neg' : '') + '" style="width:' + sov + '%"></div></div>' +
         sov + '%</td>' +
         '<td><span class="lean-pill ' + esc(c.sentiment_lean) + '">' + leanZh(c.sentiment_lean) + '</span></td>' +
-        '<td>' + esc(c.note || '') + '</td></tr>';
+        '<td>' + esc((I18N ? I18N.compNote(c.note) : c.note) || '') + '</td></tr>';
     });
     html += '</tbody></table>';
     setHTML(box, html);
   }
 
   function leanZh(l) {
-    return ({ positive: '偏正', negative: '偏负', mixed: '分化', neutral: '中性' })[l] || l || '—';
+    return (I18N ? I18N.lean(l) : ({ positive: '偏正', negative: '偏负', mixed: '分化', neutral: '中性' })[l]) || l || '—';
   }
 
   function renderIssues() {
@@ -291,17 +314,19 @@
     var risks = DATA.risks || [];
     var opps = DATA.opportunities || [];
     var html = '';
-    risks.forEach(function (r) {
+    risks.forEach(function (r0) {
+      var r = I18N ? I18N.risk(r0) : r0;
       html += '<div class="issue risk"><span class="sev">' + esc(r.severity) + '</span>' +
-        '<div class="itag">风险</div><div class="ititle">' + esc(r.title) + '</div>' +
+        '<div class="itag">' + t('issue.risk') + '</div><div class="ititle">' + esc(r.title) + '</div>' +
         '<div class="idetail">' + esc(r.detail) + '</div></div>';
     });
-    opps.forEach(function (o) {
+    opps.forEach(function (o0) {
+      var o = I18N ? I18N.opp(o0) : o0;
       html += '<div class="issue opp"><span class="sev">' + esc(o.severity) + '</span>' +
-        '<div class="itag">机会</div><div class="ititle">' + esc(o.title) + '</div>' +
+        '<div class="itag">' + t('issue.opp') + '</div><div class="ititle">' + esc(o.title) + '</div>' +
         '<div class="idetail">' + esc(o.detail) + '</div></div>';
     });
-    setHTML(box, html || '<p class="card-muted">暂无风险/机会条目</p>');
+    setHTML(box, html || '<p class="card-muted">' + t('empty.issues') + '</p>');
   }
 
   function renderMix() {
@@ -312,14 +337,14 @@
     if (bar) {
       setHTML(bar, Object.keys(vm).map(function (k) {
         var pct = ((vm[k] / total) * 100).toFixed(1);
-        return '<div class="mix-seg" style="width:' + pct + '%;background:' + (colors[k] || '#ccc') + '" title="' + esc(k) + ' ' + vm[k] + '">' +
+        return '<div class="mix-seg" style="width:' + pct + '%;background:' + (colors[k] || '#ccc') + '" title="' + esc(L(k)) + ' ' + vm[k] + '">' +
           (Number(pct) > 12 ? pct + '%' : '') + '</div>';
       }).join(''));
     }
     var leg = byId('voiceMixLegend');
     if (leg) {
       setHTML(leg, Object.keys(vm).map(function (k) {
-        return '<span><i style="background:' + (colors[k] || '#ccc') + '"></i>' + esc(k) + ' ' + vm[k] + '</span>';
+        return '<span><i style="background:' + (colors[k] || '#ccc') + '"></i>' + esc(L(k)) + ' ' + vm[k] + '</span>';
       }).join(''));
     }
 
@@ -328,7 +353,7 @@
       var max = DATA.segment_mix.reduce(function (m, s) { return Math.max(m, s.count || 0); }, 1);
       setHTML(segBox, DATA.segment_mix.map(function (s) {
         var w = Math.round(((s.count || 0) / max) * 100);
-        return '<div class="bar-row"><div class="name">' + esc(s.name) + '</div>' +
+        return '<div class="bar-row"><div class="name">' + esc(L(s.name)) + '</div>' +
           '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:#333"></div></div>' +
           '<div class="cnt">' + (s.count || 0) + '</div></div>';
       }).join(''));
@@ -351,7 +376,7 @@
     setHTML(box, plats.map(function (p) {
       var w = Math.round(((p.count || 0) / max) * 100);
       var col = PLAT_COLORS[p.name] || '#666';
-      return '<div class="bar-row"><div class="name" title="' + esc(p.name) + '">' + esc(p.name) + '</div>' +
+      return '<div class="bar-row"><div class="name" title="' + esc(L(p.name)) + '">' + esc(L(p.name)) + '</div>' +
         '<div class="bar-track"><div class="bar-fill" style="width:' + w + '%;background:' + col + '"></div></div>' +
         '<div class="cnt">' + (p.count || 0) + '<span class="card-muted"> (' + (p.pct || 0) + '%)</span></div></div>';
     }).join(''));
@@ -369,7 +394,7 @@
         acc += pct;
       });
       var legend = mix.map(function (m) {
-        return '<span><i style="background:' + (CH_COLORS[m.name] || '#ccc') + '"></i>' + esc(m.label || m.name) + ' ' + m.count + '</span>';
+        return '<span><i style="background:' + (CH_COLORS[m.name] || '#ccc') + '"></i>' + esc(channelLabel(m.name) || m.label || m.name) + ' ' + m.count + '</span>';
       }).join('');
       setHTML(donutHost,
         '<div class="css-donut-wrap" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">' +
@@ -385,11 +410,11 @@
     if (!box) return;
     var n = DATA.news_ugc_official || {};
     var rows = [
-      { key: 'ugc', label: 'UGC（小红书/微博/知乎）', color: CH_COLORS.ugc },
-      { key: 'official', label: '官方（官网/新闻稿）', color: CH_COLORS.official },
-      { key: 'news', label: '新闻媒体', color: CH_COLORS.news },
-      { key: 'forum', label: '论坛/社区', color: CH_COLORS.forum },
-      { key: 'web', label: '网页其他', color: CH_COLORS.web }
+      { key: 'ugc', label: t('share.ugc'), color: CH_COLORS.ugc },
+      { key: 'official', label: t('share.official'), color: CH_COLORS.official },
+      { key: 'news', label: t('share.news'), color: CH_COLORS.news },
+      { key: 'forum', label: t('share.forum'), color: CH_COLORS.forum },
+      { key: 'web', label: t('share.web'), color: CH_COLORS.web }
     ];
     var max = rows.reduce(function (m, r) { return Math.max(m, n[r.key] || 0); }, 1);
     setHTML(box, rows.map(function (r) {
@@ -409,11 +434,11 @@
     setHTML(box,
       '<div class="mix-bars" style="margin-bottom:8px">' + rows.map(function (r) {
         var pct = ((r.count / total) * 100).toFixed(1);
-        return '<div class="mix-seg" style="width:' + pct + '%;background:' + (CRED_COLORS[r.name] || '#ccc') + '" title="' + esc(r.label) + '">' +
+        return '<div class="mix-seg" style="width:' + pct + '%;background:' + (CRED_COLORS[r.name] || '#ccc') + '" title="' + esc(t('cred.' + r.name) || r.label) + '">' +
           (Number(pct) > 10 ? pct + '%' : '') + '</div>';
       }).join('') + '</div>' +
       '<div class="mix-legend">' + rows.map(function (r) {
-        return '<span><i style="background:' + (CRED_COLORS[r.name] || '#ccc') + '"></i>' + esc(r.label) + ' ' + r.count + ' (' + r.pct + '%)</span>';
+        return '<span><i style="background:' + (CRED_COLORS[r.name] || '#ccc') + '"></i>' + esc(t('cred.' + r.name) || r.label) + ' ' + r.count + ' (' + r.pct + '%)</span>';
       }).join('') + '</div>'
     );
   }
@@ -423,20 +448,20 @@
     if (!box) return;
     var cs = DATA.cross_source_themes;
     if (!cs || !cs.themes || !cs.platforms) {
-      setHTML(box, '<p class="card-muted">暂无跨源主题矩阵</p>');
+      setHTML(box, '<p class="card-muted">' + t('empty.cross') + '</p>');
       return;
     }
     var max = 1;
     (cs.matrix || []).forEach(function (row) {
       row.forEach(function (v) { if (v > max) max = v; });
     });
-    var html = '<div class="heat-wrap"><table class="heat-table"><thead><tr><th>主题 \\ 平台</th>';
+    var html = '<div class="heat-wrap"><table class="heat-table"><thead><tr>' + '<th>' + t('cross.theme_plat') + '</th>' + '';
     cs.platforms.forEach(function (pl) {
       html += '<th title="' + esc(pl) + '">' + esc(pl.length > 4 ? pl.slice(0, 4) : pl) + '</th>';
     });
     html += '</tr></thead><tbody>';
     cs.themes.forEach(function (th, i) {
-      html += '<tr><td class="heat-label">' + esc(th) + '</td>';
+      html += '<tr><td class="heat-label">' + esc(L(th)) + '</td>';
       (cs.matrix[i] || []).forEach(function (v) {
         var intensity = max ? v / max : 0;
         var bg = v === 0 ? '#f7f7f7' : 'rgba(219,0,17,' + (0.12 + intensity * 0.75).toFixed(2) + ')';
@@ -447,13 +472,13 @@
     });
     html += '</tbody></table></div>';
     // Fix titles properly
-    html = '<div class="heat-wrap"><table class="heat-table"><thead><tr><th>主题 \\ 平台</th>';
+    html = '<div class="heat-wrap"><table class="heat-table"><thead><tr>' + '<th>' + t('cross.theme_plat') + '</th>' + '';
     cs.platforms.forEach(function (pl) {
-      html += '<th title="' + esc(pl) + '">' + esc(pl.length > 5 ? pl.slice(0, 5) + '…' : pl) + '</th>';
+      html += '<th title="' + esc(L(pl)) + '">' + esc((L(pl).length > 5 ? L(pl).slice(0, 5) + '…' : L(pl))) + '</th>';
     });
     html += '</tr></thead><tbody>';
     cs.themes.forEach(function (th, i) {
-      html += '<tr><td class="heat-label">' + esc(th) + '</td>';
+      html += '<tr><td class="heat-label">' + esc(L(th)) + '</td>';
       (cs.matrix[i] || []).forEach(function (v, j) {
         var intensity = max ? v / max : 0;
         var bg = v === 0 ? '#f7f7f7' : 'rgba(219,0,17,' + (0.12 + intensity * 0.75).toFixed(2) + ')';
@@ -462,25 +487,28 @@
       });
       html += '</tr>';
     });
-    html += '</tbody></table><p class="card-muted" style="margin-top:8px">清洗后样本 · 单元格=帖数 · 颜色越深声量越高</p></div>';
+    html += '</tbody></table><p class="card-muted" style="margin-top:8px">' + t('cross.note') + '</p></div>';
     setHTML(box, html);
   }
 
   function renderPersonaBits() {
+    var persona = livePersona();
     setText(byId('oneLiner'), persona.one_liner || '');
     var focus = byId('focusWeek');
     if (focus) {
       setHTML(focus, (persona.focus_week || []).map(function (f) {
-        return '<div class="focus-card"><div class="flabel">本周关注 · ' + esc(f.label) + '</div>' +
+        return '<div class="focus-card"><div class="flabel">' + t('sec.focus_prefix') + ' · ' + esc(f.label) + '</div>' +
           '<div class="ftext">' + esc(f.text) + '</div></div>';
       }).join(''));
     }
     var ins = byId('insightList');
     if (ins) {
-      setHTML(ins, (persona.insights || []).map(function (t) {
-        return '<li>' + esc(t) + '</li>';
+      setHTML(ins, (persona.insights || []).map(function (line) {
+        return '<li>' + esc(line) + '</li>';
       }).join(''));
     }
+    var ih = byId('insightHeading');
+    if (ih) setText(ih, t('sec.insight_prefix') + ' · ' + (persona.title || ''));
   }
 
   var fd = DATA.filter_defaults || {};
@@ -504,52 +532,57 @@
     var fQ = byId('fSearch');
     if (fInt) {
       fInt.checked = filterState.hideIntermediaries;
-      fInt.addEventListener('change', function () { filterState.hideIntermediaries = !!fInt.checked; renderFeed(); });
+      if (!filtersBound) fInt.addEventListener('change', function () { filterState.hideIntermediaries = !!fInt.checked; renderFeed(); });
     }
     if (fPers) {
       fPers.checked = filterState.hidePersonalNoise;
-      fPers.addEventListener('change', function () { filterState.hidePersonalNoise = !!fPers.checked; renderFeed(); });
+      if (!filtersBound) fPers.addEventListener('change', function () { filterState.hidePersonalNoise = !!fPers.checked; renderFeed(); });
     }
     if (fSent) {
-      setHTML(fSent, '<option value="">全部情感</option><option>正面</option><option>负面</option><option>中性</option>');
-      fSent.addEventListener('change', function () { filterState.sentiment = fSent.value; renderFeed(); });
+      setHTML(fSent, '<option value="">' + t('filter.all_sent') + '</option><option value="正面">' + t('sent.pos') + '</option><option value="负面">' + t('sent.neg') + '</option><option value="中性">' + t('sent.neu') + '</option>');
+      fSent.value = filterState.sentiment || '';
+      if (!filtersBound) fSent.addEventListener('change', function () { filterState.sentiment = fSent.value; renderFeed(); });
     }
     if (fCat) {
-      setHTML(fCat, '<option value="">全部分类</option>' + (DATA.categories || []).map(function (c) {
-        return '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+      setHTML(fCat, '<option value="">' + t('filter.all_cat') + '</option>' + (DATA.categories || []).map(function (c) {
+        return '<option value="' + esc(c) + '">' + esc(L(c)) + '</option>';
       }).join(''));
-      fCat.addEventListener('change', function () { filterState.category = fCat.value; syncTopicChips(); renderFeed(); });
+      fCat.value = filterState.category || '';
+      if (!filtersBound) fCat.addEventListener('change', function () { filterState.category = fCat.value; syncTopicChips(); renderFeed(); });
     }
     if (fPlat) {
       var plats = (DATA.platforms || []).map(function (p) { return p.name; });
-      setHTML(fPlat, '<option value="">全部平台</option>' + plats.map(function (c) {
-        return '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+      setHTML(fPlat, '<option value="">' + t('filter.all_plat') + '</option>' + plats.map(function (c) {
+        return '<option value="' + esc(c) + '">' + esc(L(c)) + '</option>';
       }).join(''));
-      fPlat.addEventListener('change', function () { filterState.platform = fPlat.value; renderFeed(); });
+      fPlat.value = filterState.platform || '';
+      if (!filtersBound) fPlat.addEventListener('change', function () { filterState.platform = fPlat.value; renderFeed(); });
     }
     if (fCh) {
-      setHTML(fCh, '<option value="">全部渠道</option>' +
+      setHTML(fCh, '<option value="">' + t('filter.all_ch') + '</option>' +
         ['ugc', 'news', 'official', 'forum', 'web'].map(function (c) {
-          return '<option value="' + c + '">' + esc(CHANNEL_LABEL[c] || c) + '</option>';
+          return '<option value="' + c + '">' + esc(channelLabel(c)) + '</option>';
         }).join(''));
-      fCh.addEventListener('change', function () { filterState.source_channel = fCh.value; renderFeed(); });
+      fCh.value = filterState.source_channel || '';
+      if (!filtersBound) fCh.addEventListener('change', function () { filterState.source_channel = fCh.value; renderFeed(); });
     }
     if (fQ) {
-      var t;
-      fQ.addEventListener('input', function () {
-        clearTimeout(t);
-        t = setTimeout(function () { filterState.q = fQ.value; renderFeed(); }, 200);
+      fQ.setAttribute('placeholder', t('filter.search_ph'));
+      var searchTimer;
+      if (!filtersBound) fQ.addEventListener('input', function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () { filterState.q = fQ.value; renderFeed(); }, 200);
       });
     }
 
     var topics = byId('topicChips');
     if (topics) {
-      var chips = '<button type="button" class="topic-chip active" data-cat="">全部</button>' +
+      var chips = '<button type="button" class="topic-chip active" data-cat="">' + t('filter.all') + '</button>' +
         (DATA.categories || []).map(function (c) {
-          return '<button type="button" class="topic-chip" data-cat="' + esc(c) + '">' + esc(c) + '</button>';
+          return '<button type="button" class="topic-chip" data-cat="' + esc(c) + '">' + esc(L(c)) + '</button>';
         }).join('');
       setHTML(topics, chips);
-      topics.addEventListener('click', function (e) {
+      if (!filtersBound) topics.addEventListener('click', function (e) {
         var btn = e.target && e.target.closest ? e.target.closest('.topic-chip') : null;
         if (!btn) return;
         var cat = btn.getAttribute('data-cat') || '';
@@ -560,6 +593,8 @@
         renderFeed();
       });
     }
+    syncTopicChips();
+    filtersBound = true;
   }
 
   function syncTopicChips() {
@@ -573,42 +608,43 @@
   function platformPill(p) {
     var plat = p.platform || '—';
     var cls = PLATFORM_CLASS[plat] || 'plat-web';
-    return '<span class="pill platform ' + cls + '">' + esc(plat) + '</span>';
+    return '<span class="pill platform ' + cls + '">' + esc(L(plat)) + '</span>';
   }
 
   function renderFeed() {
     var posts = filterPosts(filterState);
     var countEl = byId('filterCount');
     var total = (DATA.posts || []).length;
-    if (countEl) setText(countEl, '显示 ' + posts.length + ' / 共 ' + total + ' 条');
+    if (countEl) setText(countEl, t('feed.show') + ' ' + posts.length + ' ' + t('feed.of') + ' ' + t('feed.total') + ' ' + total + ' ' + t('feed.items'));
 
     var tbody = byId('postBody');
     if (!tbody) return;
     if (!posts.length) {
-      setHTML(tbody, '<tr><td colspan="7" class="card-muted">无匹配帖子</td></tr>');
+      setHTML(tbody, '<tr><td colspan="7" class="card-muted">' + t('empty.posts') + '</td></tr>');
       return;
     }
     setHTML(tbody, posts.slice(0, 120).map(function (p) {
-      var demo = (p.is_placeholder || p.demo_badge) ? '<span class="pill demo">示意·模拟</span> ' : '';
+      var demo = (p.is_placeholder || p.demo_badge) ? '<span class="pill demo">' + t('badge.demo_ms') + '</span> ' : '';
       var src;
       if (p.source_status === 'justone_api') src = '<span class="pill src">Just One</span>';
       else if (p.source_status === 'web_informed') src = '<span class="pill src web">Web Informed</span>';
-      else src = '<span class="pill demo">示意·模拟</span>';
-      var ch = '<span class="pill channel">' + esc(CHANNEL_LABEL[p.source_channel] || p.source_channel || '—') + '</span>';
-      var cred = '<span class="pill cred-' + esc(p.credibility || 'medium') + '">' + esc(({ high: '高可信', medium: '中可信', low: '低可信' })[p.credibility] || p.credibility || '') + '</span>';
+      else src = '<span class="pill demo">' + t('badge.demo_ms') + '</span>';
+      var ch = '<span class="pill channel">' + esc(channelLabel(p.source_channel) || p.source_channel || '—') + '</span>';
+      var cred = '<span class="pill cred-' + esc(p.credibility || 'medium') + '">' + esc(({ high: t('cred.high'), medium: t('cred.medium'), low: t('cred.low') })[p.credibility] || p.credibility || '') + '</span>';
       var comps = (p.competitors && p.competitors.length) ? p.competitors.join('、') : '—';
       var link = '';
       if (p.url && !/xiaohongshu\.com\/(explore|discovery)/i.test(p.url)) {
-        link = ' <a href="' + esc(p.url) + '" target="_blank" rel="noopener">链接</a>';
+        link = ' <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + t('link') + '</a>';
       }
       return '<tr>' +
-        '<td><div class="title">' + demo + esc(p.title || '（无标题）') + '</div>' +
+        '<td><div class="title">' + demo + esc(p.title || t('no_title')) + '</div>' +
         '<div class="summary">' + esc(p.summary || '') + link + '</div>' +
+        (isEn() ? '<div class="card-muted" style="margin-top:4px;font-style:italic">' + t('feed.orig_note') + '</div>' : '') +
         '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">' + platformPill(p) + ch + cred + '</div>' +
         '<div class="card-muted" style="margin-top:4px">' + esc(p.id || '') + '</div></td>' +
-        '<td><span class="pill ' + esc(p.sentiment) + '">' + esc(p.sentiment) + '</span></td>' +
-        '<td>' + esc(p.category || '—') + '</td>' +
-        '<td>' + esc(p.author_type || '—') + '<div class="card-muted">' + esc(p.segment || '') + '</div></td>' +
+        '<td><span class="pill ' + esc(p.sentiment) + '">' + esc(Sent(p.sentiment)) + '</span></td>' +
+        '<td>' + esc(L(p.category) || '—') + '</td>' +
+        '<td>' + esc(L(p.author_type) || '—') + '<div class="card-muted">' + esc(L(p.segment) || '') + '</div></td>' +
         '<td>' + src + '<div class="card-muted">' + esc(p.published_at || '') + '</div></td>' +
         '<td class="card-muted">' + esc(comps) + '</td>' +
         '</tr>';
@@ -619,33 +655,37 @@
     var box = byId('methodBody');
     if (!box) return;
     var m = DATA.meta || {};
-    var ms = DATA.management_summary || {};
+    var ms = (I18N ? I18N.mgmt() : null) || DATA.management_summary || {};
     var k = DATA.kpis_clean || {};
-    var plats = (DATA.platforms || []).map(function (p) { return p.name + ' ' + p.count; }).join(' · ');
+    var plats = (DATA.platforms || []).map(function (p) { return L(p.name) + ' ' + p.count; }).join(' · ');
+    var disc = I18N ? I18N.metaField('disclaimer', m.disclaimer) : m.disclaimer;
+    var gap = I18N ? I18N.metaField('data_gap_note', m.data_gap_note) : m.data_gap_note;
     setHTML(box,
-      '<h3>数据来源与口径（多源）</h3>' +
+      '<h3>' + t('method.src_ms') + '</h3>' +
       '<ul>' +
-      '<li><strong>版本：</strong>' + esc(m.version || 'multisource') + ' · 相对 v1/v2 小红书单源，本套件扩展官网/新闻/微博/知乎/论坛</li>' +
-      '<li><strong>样本：</strong>Just One ' + (k.justone_count || 0) + ' · Web Informed ' + (k.web_informed_count || 0) + ' · 示意·模拟 ' + (k.placeholder_count || 0) + '（合计 ' + ((DATA.posts || []).length) + '）</li>' +
-      '<li><strong>平台分布：</strong>' + esc(plats) + '</li>' +
-      '<li><strong>更新：</strong>' + esc(m.updated_at_display || '') + '</li>' +
-      '<li><strong>默认过滤：</strong>隐藏中介/公司秘书/企服推广 + 隐藏个人户噪声；KPI 以清洗后口径汇报</li>' +
-      '<li><strong>可信度：</strong>官网/新闻=高；Just One UGC=中；示意·模拟/中介噪声=低</li>' +
-      '<li><strong>免责声明：</strong>' + esc(m.disclaimer || '') + '</li>' +
-      '<li><strong>数据缺口：</strong>' + esc(m.data_gap_note || '') + '</li>' +
+      '<li><strong>' + t('method.version') + '</strong>' + esc(m.version || 'multisource') + ' · ' + t('method.version_note') + '</li>' +
+      '<li><strong>' + t('method.sample') + '</strong>Just One ' + (k.justone_count || 0) + ' · Web Informed ' + (k.web_informed_count || 0) + ' · ' + t('badge.demo_ms') + ' ' + (k.placeholder_count || 0) + ' (Σ ' + ((DATA.posts || []).length) + ')</li>' +
+      '<li><strong>' + t('method.plats') + '</strong>' + esc(plats) + '</li>' +
+      '<li><strong>' + t('method.updated') + '</strong>' + esc(m.updated_at_display || '') + '</li>' +
+      '<li><strong>' + t('method.filter') + '</strong>' + t('method.filter_v') + '</li>' +
+      '<li><strong>' + t('method.cred') + '</strong>' + t('method.cred_v') + '</li>' +
+      '<li><strong>' + t('method.disclaimer') + '</strong>' + esc(disc || '') + '</li>' +
+      '<li><strong>' + t('method.gap') + '</strong>' + esc(gap || '') + '</li>' +
       '</ul>' +
-      '<h3>声音质量说明</h3>' +
+      '<h3>' + t('method.voice') + '</h3>' +
       '<p>' + esc(ms.voice_quality_note || '') + '</p>' +
-      '<h3>示意数据标记</h3>' +
-      '<p>竞品 SOV、周情感趋势、微博/知乎/论坛占位帖标有 <span class="pill demo">示意·模拟</span>。Web Informed 条目允许真实官网/新闻 URL；<strong>不编造</strong>小红书 explore/note 假链接。</p>' +
-      '<h3>推荐管理层行动</h3>' +
+      '<h3>' + t('method.demo') + '</h3>' +
+      '<p>' + t('method.demo_p_ms') + ' <span class="pill demo">' + t('badge.demo_ms') + '</span></p>' +
+      '<h3>' + t('method.actions') + '</h3>' +
       '<ul>' + (ms.recommended_actions || []).map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>'
     );
   }
 
-  function boot() {
+  function refreshAll(opts) {
+    opts = opts || {};
+    destroyCharts();
+    if (I18N) I18N.applyDom(document);
     safe('header', renderHeader);
-    safe('tabs', initTabs);
     safe('kpis', renderKPIs);
     safe('sentiment', renderSentiment);
     safe('wordcloud', renderWordCloud);
@@ -658,9 +698,22 @@
     safe('credibility', renderCredibility);
     safe('crossSource', renderCrossSource);
     safe('persona', renderPersonaBits);
-    safe('filters', initFilters);
+    if (!opts.skipFilters) safe('filters', initFilters);
+    else {
+      // re-label filter options without rebinding
+      safe('filters', initFilters);
+    }
     safe('feed', renderFeed);
     safe('method', renderMethod);
+  }
+
+  function boot() {
+    if (I18N) {
+      I18N.mountToggle();
+      I18N.onChange(function () { refreshAll(); });
+    }
+    safe('tabs', initTabs);
+    refreshAll();
   }
 
   if (document.readyState === 'loading') {

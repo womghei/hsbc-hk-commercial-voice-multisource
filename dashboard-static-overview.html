@@ -20,20 +20,21 @@
   <div class="topbar-inner">
     <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>
       <span class="brand-text">汇丰香港 · 商业银行多源社交聆听<span class="brand-sub">香港管理层 / Country Head</span></span></a>
-    <div class="top-meta"><div>香港管理层总览</div><div>更新 2026-09-16 19:50 HKT</div></div>
+    <div class="top-meta"><div>香港管理层总览</div><div>更新 2026-09-16 19:50 HKT</div><div id="langToggleHost" class="lang-toggle-host"></div></div>
   </div>
-  <nav class="persona-nav"><a href="index.html">总览入口</a><a href="head.html" class="active">交互版看板</a><a href="dashboard-static-overview.html">本静态页</a></nav>
+  <nav class="persona-nav"><a href="index.html" data-i18n="nav.hub">总览入口</a><a href="head.html" class="active" data-i18n="static.interactive">交互版看板</a><a href="dashboard-static-overview.html" data-i18n="static.this">本静态页</a></nav>
 </header>
 <nav class="page-tabs"><div class="page-tabs-inner"><span class="page-tab active">1 管理层总览（静态 · 多源）</span></div></nav>
 <main class="wrap">
-  <div class="hero-strip"><div class="label"><span class="hex-accent"></span>高管一句话</div><p>多源样本：开户透明度与客户经理连续性仍是核心声誉风险；官网 Sprint/IADS/资费可对冲 UGC 偏差，竞品对比活跃。</p></div>
-  <div class="section-title"><span class="hex-accent"></span>关键指标</div>
+  <p id="staticLangNote" class="card-muted" style="display:none;margin:0 0 12px" data-i18n="static.en_note">English labels via toggle or ?lang=en</p>
+  <div class="hero-strip"><div class="label"><span class="hex-accent"></span><span data-i18n="sec.one_liner">高管一句话</span></div><p><span data-static-zh="多源样本：开户透明度与客户经理连续性仍是核心声誉风险；官网 Sprint/IADS/资费可对冲 UGC 偏差，竞品对比活跃。" data-static-en="Cleaned sample: opening transparency and RM continuity are core reputation risks; competitor comparisons are active — clarify fees and timeline expectations.">多源样本：开户透明度与客户经理连续性仍是核心声誉风险；官网 Sprint/IADS/资费可对冲 UGC 偏差，竞品对比活跃。</span></p></div>
+  <div class="section-title"><span class="hex-accent"></span><span data-i18n="sec.kpis">关键指标</span></div>
   <div class="kpi-strip">
-    <div class="kpi"><div class="k-label">可见帖数</div><div class="k-value">92</div><div class="k-hint">噪声过滤后</div></div>
-    <div class="kpi pos"><div class="k-label">正面占比</div><div class="k-value">9.8%</div><div class="k-hint">情感正向</div></div>
-    <div class="kpi neg highlight"><div class="k-label">负面占比</div><div class="k-value">7.6%</div><div class="k-hint">情感负向</div></div>
-    <div class="kpi neu"><div class="k-label">中性占比</div><div class="k-value">82.6%</div><div class="k-hint">情感中性</div></div>
-    <div class="kpi highlight"><div class="k-label">净情感</div><div class="k-value">+2.2pp</div><div class="k-hint">正面−负面 pp</div></div>
+    <div class="kpi"><div class="k-label" data-i18n="kpi.total_posts">可见帖数</div><div class="k-value">92</div><div class="k-hint" data-i18n="kpi.total_posts_h">噪声过滤后</div></div>
+    <div class="kpi pos"><div class="k-label" data-i18n="kpi.positive_pct">正面占比</div><div class="k-value">9.8%</div><div class="k-hint" data-i18n="kpi.positive_pct_h">情感正向</div></div>
+    <div class="kpi neg highlight"><div class="k-label" data-i18n="kpi.negative_pct">负面占比</div><div class="k-value">7.6%</div><div class="k-hint" data-i18n="kpi.negative_pct_h">情感负向</div></div>
+    <div class="kpi neu"><div class="k-label" data-i18n="kpi.neutral_pct">中性占比</div><div class="k-value">82.6%</div><div class="k-hint" data-i18n="kpi.neutral_pct_h">情感中性</div></div>
+    <div class="kpi highlight"><div class="k-label" data-i18n="kpi.net_sentiment">净情感</div><div class="k-value">+2.2pp</div><div class="k-hint" data-i18n="kpi.net_sentiment_h">正面−负面 pp</div></div>
     <div class="kpi"><div class="k-label">Web Informed</div><div class="k-value">8</div><div class="k-hint">官网/新闻等</div></div>
     <div class="kpi"><div class="k-label">平台数</div><div class="k-value">7</div><div class="k-hint">多源覆盖</div></div>
     <div class="kpi highlight"><div class="k-label">中介/企服</div><div class="k-value">10</div><div class="k-hint">全量样本</div></div>
@@ -92,7 +93,7 @@
     </div>
   </div>
 
-  <div class="section-title"><span class="hex-accent"></span>热点风险与机会</div>
+  <div class="section-title"><span class="hex-accent"></span><span data-i18n="sec.issues">热点风险与机会</span></div>
   <div class="issue-grid">
     <div class="issue risk"><span class="sev">高</span><div class="itag">风险</div><div class="ititle">开户材料与预约不透明</div><div class="idetail">补件与排期拉长旅程，易转化为负面口碑</div></div>
     <div class="issue risk"><span class="sev">高</span><div class="itag">风险</div><div class="ititle">客户经理服务连续性</div><div class="idetail">换手后跟进断层，影响跨境/外汇等高触点信任</div></div>
@@ -107,5 +108,21 @@
   </div>
 </main>
 <footer class="footer">汇丰银行香港 · 多源社交聆听静态快照 · multisource-v1 · 内部演示</footer>
+<script src="shared/i18n.js"></script>
+<script>
+(function(){
+  var I=window.HSBC_I18N; if(!I) return;
+  function applyStatic(){
+    I.applyDom(document);
+    var en=I.isEn();
+    document.querySelectorAll('[data-static-zh]').forEach(function(el){
+      el.textContent = en ? (el.getAttribute('data-static-en')||el.textContent) : (el.getAttribute('data-static-zh')||el.textContent);
+    });
+    var note=document.getElementById('staticLangNote');
+    if(note) note.style.display = en ? 'block' : 'none';
+  }
+  I.onChange(applyStatic); applyStatic();
+})();
+</script>
 </body>
 </html>
