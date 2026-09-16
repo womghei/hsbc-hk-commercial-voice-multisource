@@ -134,7 +134,7 @@
       { key: 'net_sentiment', label: t('kpi.net_sentiment'), hint: t('kpi.net_sentiment_h'), fmt: function (v) { return (v > 0 ? '+' : '') + v + 'pp'; } },
       { key: 'commercial_related_pct', label: t('kpi.commercial_related_pct'), hint: t('kpi.commercial_related_pct_h'), fmt: function (v) { return v + '%'; } },
       { key: 'intermediary_count', label: t('kpi.intermediary_count'), hint: t('kpi.intermediary_count_h'), fmt: function (v) { return v; } },
-      { key: 'justone_count', label: t('kpi.justone_count'), hint: t('kpi.justone_count_h_ms'), fmt: function (v) { return v; } },
+      { key: 'xhs_sample_count', label: t('kpi.xhs_sample_count'), hint: t('kpi.xhs_sample_count_h'), fmt: function (v) { return v; } },
       { key: 'web_informed_count', label: t('kpi.web_informed_count'), hint: t('kpi.web_informed_count_h'), fmt: function (v) { return v; } },
       { key: 'placeholder_count', label: t('kpi.placeholder_count_ms'), hint: t('kpi.placeholder_count_h_ms'), fmt: function (v) { return v; } },
       { key: 'platform_count', label: t('kpi.platform_count'), hint: t('kpi.platform_count_h'), fmt: function (v) { return v; } },
@@ -626,7 +626,7 @@
     setHTML(tbody, posts.slice(0, 120).map(function (p) {
       var demo = (p.is_placeholder || p.demo_badge) ? '<span class="pill demo">' + t('badge.demo_ms') + '</span> ' : '';
       var src;
-      if (p.source_status === 'justone_api') src = '<span class="pill src">Just One</span>';
+      if (p.source_status === 'xhs_sample_api' || p.source_status === 'xhs_public') src = '<span class="pill src">' + (isEn() ? 'XHS sample' : '小红书样本') + '</span>';
       else if (p.source_status === 'web_informed') src = '<span class="pill src web">Web Informed</span>';
       else src = '<span class="pill demo">' + t('badge.demo_ms') + '</span>';
       var ch = '<span class="pill channel">' + esc(channelLabel(p.source_channel) || p.source_channel || '—') + '</span>';
@@ -637,8 +637,8 @@
         link = ' <a href="' + esc(p.url) + '" target="_blank" rel="noopener">' + t('link') + '</a>';
       }
       return '<tr>' +
-        '<td><div class="title">' + demo + esc(p.title || t('no_title')) + '</div>' +
-        '<div class="summary">' + esc(p.summary || '') + link + '</div>' +
+        '<td><div class="title">' + demo + esc((isEn() ? (p.title_en || p.title) : (p.title || p.title_en)) || t('no_title')) + '</div>' +
+        '<div class="summary">' + esc((isEn() ? (p.summary_en || p.summary) : (p.summary || p.summary_en)) || '') + link + '</div>' +
         (isEn() ? '<div class="card-muted" style="margin-top:4px;font-style:italic">' + t('feed.orig_note') + '</div>' : '') +
         '<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">' + platformPill(p) + ch + cred + '</div>' +
         '<div class="card-muted" style="margin-top:4px">' + esc(p.id || '') + '</div></td>' +
@@ -664,7 +664,7 @@
       '<h3>' + t('method.src_ms') + '</h3>' +
       '<ul>' +
       '<li><strong>' + t('method.version') + '</strong>' + esc(m.version || 'multisource') + ' · ' + t('method.version_note') + '</li>' +
-      '<li><strong>' + t('method.sample') + '</strong>Just One ' + (k.justone_count || 0) + ' · Web Informed ' + (k.web_informed_count || 0) + ' · ' + t('badge.demo_ms') + ' ' + (k.placeholder_count || 0) + ' (Σ ' + ((DATA.posts || []).length) + ')</li>' +
+      '<li><strong>' + t('method.sample') + '</strong>' + (isEn() ? 'Xiaohongshu public sample ' : '小红书公开内容样本 ') + (k.xhs_sample_count || k.xhs_sample_count || 0) + ' · Web Informed ' + (k.web_informed_count || 0) + ' (Σ ' + ((DATA.posts || []).length) + ')</li>' +
       '<li><strong>' + t('method.plats') + '</strong>' + esc(plats) + '</li>' +
       '<li><strong>' + t('method.updated') + '</strong>' + esc(m.updated_at_display || '') + '</li>' +
       '<li><strong>' + t('method.filter') + '</strong>' + t('method.filter_v') + '</li>' +

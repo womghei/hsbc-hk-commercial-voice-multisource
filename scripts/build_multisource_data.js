@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build enhanced multi-source data.js from v2 Just One XHS posts + web-informed + placeholders.
+ * Build enhanced multi-source data.js from v2 小红书样本 XHS posts + web-informed + placeholders.
  */
 'use strict';
 const fs = require('fs');
@@ -21,7 +21,7 @@ function credibilityFor(p) {
   if (p.source_channel === 'news' || p.platform === '新闻媒体') return 'high';
   if (p.is_intermediary || p.is_personal_noise) return 'low';
   if (p.source_status === 'web_informed' && (p.source_channel === 'official' || p.source_channel === 'news')) return 'high';
-  if (p.source_status === 'justone_api') return 'medium';
+  if (p.source_status === 'xhs_sample_api') return 'medium';
   if (p.is_placeholder || p.source_status === 'placeholder') return 'low';
   if (p.source_channel === 'forum') return 'medium';
   if (p.source_channel === 'web') return 'medium';
@@ -150,7 +150,7 @@ const webInformed = [
   {
     id: 'web-informed-zhihu-compare',
     title: '知乎风格归纳：香港公司户选汇丰/渣打/中银/东亚对比（摘要）',
-    summary: '公开专栏常见叙事：汇丰适合有海外业务与贸易材料者、审核偏严；中银亚洲偏中资跨境往来；渣打对实际办公地址要求较高；东亚/大新对新公司/无关联公司更友好。此条为 Web Informed 摘要，引用真实专栏 URL，非平台 API 实拉。',
+    summary: '公开专栏常见叙事：汇丰适合有海外业务与贸易材料者、审核偏严；中银亚洲偏中资跨境往来；渣打对实际办公地址要求较高；东亚/大新对新公司/无关联公司更友好。此条为 Web Informed 摘要，引用真实专栏 URL，非平台 API 公开样本。',
     sentiment: '中性',
     themes: ['竞品对比', '开户体验'],
     category: '竞品对比',
@@ -227,10 +227,10 @@ webInformed.forEach((p) => {
 });
 
 const placeholders = [
-  { id: 'sim-weibo-001', platform: '微博', source_channel: 'ugc', title: '【示意·模拟】创业群吐槽：商业户预约排到两周后', summary: '模拟微博讨论：中小企主反馈汇丰商业开户预约紧张，补件通知不及时。示意数据，非实拉。', sentiment: '负面', category: '开户体验', themes: ['开户体验', '审批时效'], author_type: '真实客户', segment: 'SME/Mid', competitors: ['汇丰'] },
+  { id: 'sim-weibo-001', platform: '微博', source_channel: 'ugc', title: '【示意·模拟】创业群吐槽：商业户预约排到两周后', summary: '模拟微博讨论：中小企主反馈汇丰商业开户预约紧张，补件通知不及时。示意数据，非公开样本。', sentiment: '负面', category: '开户体验', themes: ['开户体验', '审批时效'], author_type: '真实客户', segment: 'SME/Mid', competitors: ['汇丰'] },
   { id: 'sim-weibo-002', platform: '微博', source_channel: 'ugc', title: '【示意·模拟】汇丰 Sprint 线上开户体验分享', summary: '模拟微博：用户称线上提交材料后约一周收到账户号，月费豁免期清楚。示意·模拟。', sentiment: '正面', category: '开户体验', themes: ['开户体验', '数字银行'], author_type: '真实客户', segment: 'SME/Mid', competitors: ['汇丰'] },
   { id: 'sim-weibo-003', platform: '微博', source_channel: 'ugc', title: '【示意·模拟】有人在问商业户 TRB 月费怎么算', summary: '模拟微博问答：讨论过去三个月平均 TRB 与月费豁免门槛。示意·模拟。', sentiment: '中性', category: '费用门槛', themes: ['费用门槛'], author_type: '真实客户', segment: 'SME/Mid', competitors: ['汇丰'] },
-  { id: 'sim-zhihu-001', platform: '知乎', source_channel: 'ugc', title: '【示意·模拟】答主整理：中小企商业户开户材料清单对比', summary: '模拟知乎回答结构：汇丰 vs 渣打 vs 中银材料差异与见证方式。示意·模拟，非 API 实拉。', sentiment: '中性', category: '竞品对比', themes: ['竞品对比', '开户体验'], author_type: '不确定', segment: 'SME/Mid', competitors: ['汇丰', '渣打', '中银香港'] },
+  { id: 'sim-zhihu-001', platform: '知乎', source_channel: 'ugc', title: '【示意·模拟】答主整理：中小企商业户开户材料清单对比', summary: '模拟知乎回答结构：汇丰 vs 渣打 vs 中银材料差异与见证方式。示意·模拟，非 API 公开样本。', sentiment: '中性', category: '竞品对比', themes: ['竞品对比', '开户体验'], author_type: '不确定', segment: 'SME/Mid', competitors: ['汇丰', '渣打', '中银香港'] },
   { id: 'sim-zhihu-002', platform: '知乎', source_channel: 'ugc', title: '【示意·模拟】企业网银双人授权值不值得开', summary: '模拟知乎讨论：安全感 vs 操作成本，提及 Business Express / HSBCnet。示意·模拟。', sentiment: '中性', category: '数字银行', themes: ['数字银行'], author_type: '真实客户', segment: 'Large', competitors: ['汇丰'] },
   { id: 'sim-zhihu-003', platform: '知乎', source_channel: 'ugc', title: '【示意·模拟】客户经理换人后跨境收款跟进断层', summary: '模拟知乎吐槽：换 RM 后外汇到账查询无人接手。示意·模拟。', sentiment: '负面', category: '客户经理', themes: ['客户经理', '贸易融资外汇'], author_type: '真实客户', segment: 'Large', competitors: ['汇丰'] },
   { id: 'sim-forum-001', platform: '论坛/社区', source_channel: 'forum', title: '【示意·模拟】V2EX 风格：香港公司户选哪家银行？', summary: '模拟论坛帖：程序员创业选银行，对比虚拟银行速度与传统行跨境能力。示意·模拟。', sentiment: '中性', category: '竞品对比', themes: ['竞品对比', '费用门槛'], author_type: '真实客户', segment: 'SME/Mid', competitors: ['汇丰', '虚拟银行', '渣打'] },
@@ -284,7 +284,7 @@ const sentClean = sentimentCounts(clean);
 const sentAll = sentimentCounts(all);
 const tClean = clean.length;
 const tAll = all.length;
-const justone = all.filter((p) => p.source_status === 'justone_api').length;
+const xhs_sample = all.filter((p) => p.source_status === 'xhs_sample_api').length;
 const ph = all.filter((p) => p.is_placeholder || p.source_status === 'placeholder').length;
 const webInf = all.filter((p) => p.source_status === 'web_informed').length;
 const intC = all.filter((p) => p.is_intermediary).length;
@@ -298,7 +298,7 @@ d.kpis_all = {
   commercial_related_pct: pct(all.filter((p) => p.commercial_related).length, tAll),
   intermediary_count: intC,
   personal_noise_count: persC,
-  justone_count: justone,
+  xhs_sample_count: xhs_sample,
   placeholder_count: ph,
   web_informed_count: webInf
 };
@@ -308,7 +308,7 @@ d.kpis_clean = {
   negative_pct: pct(sentClean['负面'], tClean),
   neutral_pct: pct(sentClean['中性'], tClean),
   commercial_related_pct: pct(clean.filter((p) => p.commercial_related).length, tClean),
-  justone_count: justone,
+  xhs_sample_count: xhs_sample,
   placeholder_count: ph,
   intermediary_count: intC,
   personal_noise_count: persC,
@@ -401,13 +401,13 @@ d.segment_mix = Object.keys(segMap).map((n) => ({ name: n, count: segMap[n] })).
 
 d.meta = Object.assign({}, d.meta, {
   title: '汇丰银行香港 · 商业银行多源客户声音监听',
-  subtitle: '多源：小红书 Just One + 官网/新闻 Web Informed + 微博/知乎/论坛示意',
+  subtitle: '多源：小红书 小红书样本 + 官网/新闻 Web Informed + 微博/知乎/论坛示意',
   updated_at: '2026-09-16T19:50:00+08:00',
   updated_at_display: '2026-09-16 19:50 HKT',
   focus_platform: '多源（小红书为主）',
   version: 'multisource-v1',
   suite_title: '汇丰香港商业银行 · 多源社交聆听看板套件',
-  disclaimer: '含 Just One API 小红书实拉样本、官网/新闻 Web Informed（真实 URL）、以及微博/知乎/论坛「示意·模拟」占位。第三方 API 非官方授权。请人工核对中介噪声。',
+  disclaimer: '含 小红书公开内容检索 小红书公开样本样本、官网/新闻 Web Informed（真实 URL）、以及微博/知乎/论坛「示意·模拟」占位。第三方 API 非官方授权。请人工核对中介噪声。',
   data_gap_note: '消费社交平台上商业银行声量仍偏薄；官网与新闻稿可补齐产品/资费事实；微博/知乎/论坛条目多为示意结构，正式上线需替换为合规采集。',
   multi_source: true
 });
@@ -438,7 +438,7 @@ d.insights_default = [
 ];
 
 const out = '/* HSBC Commercial Voice — multi-source dataset */\n' +
-  '/* Built from v2 Just One XHS + web_informed (real URLs) + 示意·模拟 placeholders */\n' +
+  '/* Built from v2 小红书样本 XHS + web_informed (real URLs) + 示意·模拟 placeholders */\n' +
   'window.HSBC_SL_DATA = ' + JSON.stringify(d, null, 2) + ';\n';
 fs.writeFileSync(path.join(ROOT, 'shared', 'data.js'), out);
 console.log('Wrote data.js posts', tAll, 'clean', tClean);

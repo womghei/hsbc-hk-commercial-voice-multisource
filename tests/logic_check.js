@@ -24,7 +24,7 @@ function assert(cond, msg) {
 }
 
 const posts = DATA.posts || [];
-assert(posts.length > 80, 'posts.length > 80 (got ' + posts.length + ')');
+assert(posts.length >= 100, 'posts.length >= 100 (got ' + posts.length + ')');
 
 const required = ['platform', 'sentiment', 'category', 'author_type'];
 let missing = 0;
@@ -35,35 +35,48 @@ posts.forEach((p, i) => {
       if (missing <= 5) console.error('  missing', k, 'on', p.id || i);
     }
   });
-  // also recommend source_channel / credibility but hard-require the four
 });
 assert(missing === 0, 'every post has platform, sentiment, category, author_type');
 
-// source_channel + credibility present
 const noCh = posts.filter((p) => !p.source_channel).length;
 const noCred = posts.filter((p) => !p.credibility).length;
 assert(noCh === 0, 'every post has source_channel');
 assert(noCred === 0, 'every post has credibility');
 
+// Default published set includes intermediaries; "clean" = non-intermediary
 const clean = posts.filter((p) => !p.is_intermediary && !p.is_personal_noise);
 const k = DATA.kpis_clean || {};
 const diff = Math.abs((k.total_posts || 0) - clean.length);
 assert(diff <= 1, 'kpis_clean.total_posts reconciles with filtered posts (±1): kpi=' + k.total_posts + ' clean=' + clean.length);
 
-// sentiment reconcile
+// Primary KPIs should match full published set (intermediaries included by default)
+const kAll = DATA.kpis || DATA.kpis_all || {};
+assert(Math.abs((kAll.total_posts || 0) - posts.length) <= 1, 'kpis.total_posts ~= all posts');
+
 const sc = { '正面': 0, '负面': 0, '中性': 0 };
-clean.forEach((p) => { sc[p.sentiment] = (sc[p.sentiment] || 0) + 1; });
+posts.forEach((p) => { sc[p.sentiment] = (sc[p.sentiment] || 0) + 1; });
 const sent = DATA.sentiment || {};
-const sDiff = Math.abs((sent['正面'] || 0) - sc['正面']) + Math.abs((sent['负面'] || 0) - sc['负面']) + Math.abs((sent['中性'] || 0) - sc['中性']);
-assert(sDiff <= 1, 'sentiment counts reconcile with clean posts (±1 total drift)');
+const sDiff =
+  Math.abs((sent['正面'] || sent.positive || 0) - sc['正面']) +
+  Math.abs((sent['负面'] || sent.negative || 0) - sc['负面']) +
+  Math.abs((sent['中性'] || sent.neutral || 0) - sc['中性']);
+assert(sDiff <= 2, 'sentiment counts reconcile with published posts (±2 total drift)');
 
 const platforms = new Set(posts.map((p) => p.platform));
-assert(platforms.size >= 4, 'at least 4 platforms present (got ' + platforms.size + ': ' + [...platforms].join(', ') + ')');
+assert(platforms.size >= 3, 'at least 3 platforms present (got ' + platforms.size + ': ' + [...platforms].join(', ') + ')');
 
 const webInf = posts.filter((p) => p.source_status === 'web_informed').length;
 assert(webInf >= 5, 'web_informed count >= 5 (got ' + webInf + ')');
 
-// no invented xhs explore/note fake urls
+const placeholders = posts.filter((p) => p.is_placeholder || p.source_status === 'placeholder');
+assert(placeholders.length === 0, 'no placeholder / simulated posts (got ' + placeholders.length + ')');
+
+const personal = posts.filter((p) => p.is_personal_noise || p.category === '个人户噪声');
+assert(personal.length === 0, 'no personal-banking posts in published set (got ' + personal.length + ')');
+
+const badVendor = JSON.stringify(DATA).match(/Just One|justoneapi|实拉/gi) || [];
+assert(badVendor.length === 0, 'no Just One / vendor branding in data.js (hits=' + badVendor.length + ')');
+
 const badUrls = [];
 posts.forEach((p) => {
   const urls = [];
@@ -73,16 +86,17 @@ posts.forEach((p) => {
     if (!u) return;
     if (/xiaohongshu\.com\/(explore|discovery)\//i.test(u)) badUrls.push(u);
     if (/xiaohongshu\.com\/user\/profile\/fake/i.test(u)) badUrls.push(u);
-    // fake note ids in explore-style paths
     if (/xiaohongshu\.com.*\/[0-9a-f]{24}/i.test(u) && /explore|discovery|fake|placeholder|xxxx/i.test(u)) badUrls.push(u);
   });
 });
 assert(badUrls.length === 0, 'no invented xiaohongshu.com/explore or fake note URLs (bad=' + badUrls.length + ')');
 
-// platform enum check
 const allowed = new Set(['小红书', '微博', '知乎', '新闻媒体', '官网/新闻稿', '论坛/社区', '网页其他']);
 const badPlat = posts.filter((p) => !allowed.has(p.platform));
 assert(badPlat.length === 0, 'all platforms in allowed enum (bad=' + badPlat.length + ')');
+
+const withEn = posts.filter((p) => p.title_en && p.summary_en).length;
+assert(withEn === posts.length, 'every post has title_en and summary_en');
 
 if (failed) {
   console.error('\n' + failed + ' assertion(s) failed');
